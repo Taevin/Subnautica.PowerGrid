@@ -1,0 +1,11 @@
+﻿{
+	"Id": "PowerGrid",
+	"DisplayName": "Power Grid",
+	"Author": "Xentor",
+	"Version": "0.1",
+	"Requires": [],
+	"Enable": true,
+	"AssemblyName": "Subnautica.PowerGrid.dll",
+	"EntryMethod": "Subnautica.PowerGrid.MainPatch.Patch",
+	"Config": {}
+}
