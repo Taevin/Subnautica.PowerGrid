@@ -8,21 +8,26 @@ namespace Subnautica.PowerGrid
 {
     internal static class Util
     {
-        public static bool TRACE = true;
 
         public static void Log(string message)
         {
-            if (TRACE) FileLog.Log(message);
+#if DEBUG
+            FileLog.Log(message);
+#endif
         }
 
         public static void Log(string message, params object[] args)
         {
-            if (TRACE) FileLog.Log(string.Format(message, args));
+#if DEBUG
+            FileLog.Log(string.Format(message, args));
+#endif
         }
 
         public static void LogError(string message, Exception ex)
         {
-            if (TRACE) FileLog.Log(string.Format("{0}\n{1}\n{2}", message, ex.Message, ex.StackTrace));
+#if DEBUG
+            FileLog.Log(string.Format("{0}\n{1}\n{2}", message, ex.Message, ex.StackTrace));
+#endif
         }
     }
 }

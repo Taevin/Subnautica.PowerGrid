@@ -159,7 +159,7 @@ namespace Subnautica.PowerGrid
 
 
             private static Dictionary<String, PowerNetwork> _networksByID = new Dictionary<string, PowerNetwork>();
-            private static Random _random = new Random(0);
+            private static long _nextNetworkID = 0;
 
             public static PowerNetwork ByID(string id) => _networksByID.GetOrDefault(id, null);
             public static PowerNetwork Create()
@@ -172,7 +172,7 @@ namespace Subnautica.PowerGrid
             private static string GenerateNetworkID()
             {
                 string id;
-                while (_networksByID.ContainsKey(id = _random.Next().ToString())) ;
+                while (_networksByID.ContainsKey(id = (_nextNetworkID = (_nextNetworkID + 1) % int.MaxValue).ToString())) ;
                 return id;
             }
 

@@ -22,12 +22,14 @@ namespace Subnautica.PowerGrid
                 return;
             }
 
+            // Prevent primary/secondary from connecting to each other
             if (__instance.gameObject == potentialRelay.gameObject)
             {
                 __result = false;
                 return;
             }
 
+            // Prevent relays from connecting to others in the same network, creating loops
             if (potentialRelay != __instance.outboundRelay && PowerNetworkController.AreInSameNetwork(__instance, potentialRelay))
             {
                 __result = false;
@@ -52,8 +54,8 @@ namespace Subnautica.PowerGrid
         {
             if (__state != null)
             {
-                Util.Log(string.Format("Disconnect {0} from {1}", __instance.Describe(), __instance.outboundRelay.Describe()));
-                PowerNetworkController.DisconnectRelays(__instance, __instance.outboundRelay);
+                Util.Log(string.Format("{0} -X-> {1}", __instance.Describe(), __state.Describe()));
+                PowerNetworkController.DisconnectRelays(__instance, __state);
             }
         }
     }
@@ -65,12 +67,18 @@ namespace Subnautica.PowerGrid
         [HarmonyPrefix]
         public static bool Prefix(PowerRelay __instance)
         {
-            Util.Log("Destroying relay: " + __instance.Describe());
-            if (__instance.outboundRelay != null)
+            Util.Log(string.Format("DESTROY {0} -X-> {1}", __instance.Describe(), __instance.outboundRelay.Describe()));
+            if (__instance.outboundRelay)
             {
+                // This essentially duplicates the disconnect logic, but must be done here, as calling DisconnectFromRelay won't
+                // work while the object is being destroyed
+                PowerRelay consumer = __instance.outboundRelay;
+                consumer.RemoveInboundPower(__instance);
                 __instance.outboundRelay = null;
-                PowerNetworkController.DisconnectRelays(__instance, __instance.outboundRelay);
+                Util.Log(string.Format("{0} -X-> {1}", __instance.Describe(), __instance.outboundRelay.Describe()));
+                PowerNetworkController.DisconnectRelays(__instance, consumer);
             }
+            
             return true;
         }
     }
@@ -85,8 +93,10 @@ namespace Subnautica.PowerGrid
         {
             if (!__result) return;
             if (relay == null) return;
+            // SN often triggers connect with the existing target, so don't do anything in that case
+            if (PowerNetworkController.AreInSameNetwork(relay, __instance)) return;
 
-            Util.Log(string.Format("Connect from {0} to {1}", __instance.Describe(), relay.Describe()));
+            Util.Log(string.Format("{0} ---> {1}", __instance.Describe(), relay.Describe()));
             PowerNetworkController.ConnectRelays(__instance, relay);
 
             if (__instance.internalPowerSource != null)
@@ -99,6 +109,8 @@ namespace Subnautica.PowerGrid
                 return;
             }
 
+            // If this is a PowerTransmitter (Not a relay in another device) without a secondary,
+            // create a secondary.
             if (__instance.gameObject.GetFullName().Contains("/PowerTransmitter")
                 && __instance.GetSecondary() == null)
             {

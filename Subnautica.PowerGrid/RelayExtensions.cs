@@ -9,6 +9,7 @@ namespace Subnautica.PowerGrid
     internal static class RelayExtensions
     {
         private static FieldInfo RELAY_INBOUND_FIELD = AccessTools.Field(typeof(PowerRelay), "inboundPowerSources");
+        private static MethodInfo DISCONNECT_FROM_RELAY = AccessTools.Method(typeof(PowerRelay), "DisconnectFromRelay");
 
         public static PowerRelay GetPrimary(this SecondaryRelay secondary)
         {
@@ -41,13 +42,35 @@ namespace Subnautica.PowerGrid
             return null;
         }
 
+        public static PowerRelay[] GetSiblings(this PowerRelay sender)
+        {
+            return sender.gameObject.GetComponents<PowerRelay>().ToArray();
+        }
+
         public static String Describe(this PowerRelay relay)
         {
             if (relay == null) return "(null)";
 
             if (relay.gameObject == null) return relay.ToString();
 
-            return relay.ToString() + " / " + relay.gameObject.GetId().Substring(0, 5);
+            string type;
+            if (relay.ToString().Contains("Transmitter"))
+            {
+                if (relay is SecondaryRelay)
+                    type = "TX-s";
+                else
+                    type = "TX-p";
+            }
+            else if (relay.ToString().Contains("Solar"))
+                type = "Spwr";
+            else if (relay.ToString().Contains("Therm"))
+                type = "Thrm";
+            else if (relay.ToString().Contains("Base"))
+                type = "Base";
+            else
+                type = relay.ToString();
+
+            return type + " " + relay.gameObject.GetId().Substring(0, 4);
         }
 
         public static String RelayID(this PowerRelay relay) => relay.gameObject.GetId();
@@ -79,6 +102,16 @@ namespace Subnautica.PowerGrid
                             yield return other;
                 }
             }
+        }
+
+        public static void DisconnectFromConsumer(this PowerRelay relay)
+        {
+            DISCONNECT_FROM_RELAY.Invoke(relay, null);
+        }
+
+        public static void DisconnectFromPrimary(this SecondaryRelay relay)
+        {
+            (RELAY_INBOUND_FIELD.GetValue(relay) as List<IPowerInterface>).Clear();
         }
 
         private static IEnumerable<PowerRelay> GetInboundRelays(PowerRelay relay)
