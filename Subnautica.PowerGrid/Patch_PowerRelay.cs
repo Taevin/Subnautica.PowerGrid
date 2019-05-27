@@ -77,8 +77,9 @@ namespace Subnautica.PowerGrid
                 __instance.outboundRelay = null;
                 Util.Log(string.Format("{0} -X-> {1}", __instance.Describe(), __instance.outboundRelay.Describe()));
                 PowerNetworkController.DisconnectRelays(__instance, consumer);
+                PowerNetworkController.DestroyRelay(__instance);
             }
-            
+
             return true;
         }
     }
@@ -129,4 +130,48 @@ namespace Subnautica.PowerGrid
         private class SecondaryPowerFX : PowerFX { }
     }
 
+    [HarmonyPatch(typeof(PowerRelay))]
+    [HarmonyPatch("GetMaxPower")]
+    internal class Patch_Relay_GetMaxPower
+    {
+        [HarmonyPrefix]
+        public static bool Prefix(PowerRelay __instance, ref float __result)
+        {
+            if (!__instance.internalPowerSource)
+            {
+                __result = PowerNetworkController.GetSuppliers(__instance).GetMaxPower(__instance);
+                return false;
+            }
+            return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(PowerRelay))]
+    [HarmonyPatch("GetPower")]
+    internal class Patch_Relay_GetPower
+    {
+        [HarmonyPrefix]
+        public static bool Prefix(PowerRelay __instance, ref float __result)
+        {
+            if (!__instance.internalPowerSource)
+            {
+                __result = PowerNetworkController.GetSuppliers(__instance).GetPower(__instance);
+                return false;
+            }
+            return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(PowerRelay))]
+    [HarmonyPatch("ModifyPowerFromInbound")]
+    internal class Patch_Relay_ModifyPowerFromInbound
+    {
+        [HarmonyPrefix]
+        public static bool Prefix(PowerRelay __instance, float amount, ref float modified, ref bool __result)
+        {
+            __result = PowerNetworkController.GetSuppliers(__instance)
+                .ModifyPower(__instance, amount, out modified);
+            return false;
+        }
+    }
 }

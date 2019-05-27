@@ -63,6 +63,7 @@
     <Compile Include="MainPatch.cs" />
     <Compile Include="Patch_PowerRelay.cs" />
     <Compile Include="PowerNetworkController.cs" />
+    <Compile Include="PowerSuppliers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RelayExtensions.cs" />
     <Compile Include="SecondaryRelay.cs" />

@@ -114,6 +114,12 @@ namespace Subnautica.PowerGrid
             (RELAY_INBOUND_FIELD.GetValue(relay) as List<IPowerInterface>).Clear();
         }
 
+        public static IEnumerable<PowerSource> GetInboundSources(this PowerRelay relay)
+        {
+            return (RELAY_INBOUND_FIELD.GetValue(relay) as List<IPowerInterface>)
+                .OfType<PowerSource>();
+        }
+
         private static IEnumerable<PowerRelay> GetInboundRelays(PowerRelay relay)
         {
             return (RELAY_INBOUND_FIELD.GetValue(relay) as List<IPowerInterface>)

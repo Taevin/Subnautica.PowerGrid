@@ -18,6 +18,8 @@ namespace Subnautica.PowerGrid
             PowerNetwork supplierNetwork = GetNetworkByRelay(supplier);
             PowerNetwork consumerNetwork = GetNetworkByRelay(consumer);
 
+            PowerSuppliers.RegisterRelay(supplier);
+
             if (supplierNetwork == consumerNetwork && supplierNetwork != null) return;
 
             string supplierID = supplier.RelayID();
@@ -64,6 +66,13 @@ namespace Subnautica.PowerGrid
             {
                 BuildNewNetwork(GetConnectedRelays(consumer));
             }
+        }
+
+        public static void DestroyRelay(PowerRelay relay)
+        {
+            PowerNetwork network = GetNetworkByRelay(relay);
+            if (network != null)
+                network.Suppliers.DestroyRelay(relay);
         }
 
         public static bool AreInSameNetwork(PowerRelay a, PowerRelay b)
@@ -117,6 +126,10 @@ namespace Subnautica.PowerGrid
             }
         }
 
+        public static PowerSuppliers GetSuppliers(PowerRelay relay)
+        {
+            return GetNetworkByRelay(relay)?.Suppliers ?? PowerSuppliers.EMPTY;
+        }
 
         private static PowerNetwork GetNetworkByRelay(PowerRelay relay) => relay == null ? null : _relayToNetwork.GetOrDefault(relay.RelayID(), null);
 
@@ -132,26 +145,22 @@ namespace Subnautica.PowerGrid
 
             public string ID { get; }
 
-            public void Add(PowerRelay relay)
-            {
-                Add(relay.RelayID());
-            }
             public void Add(string relayID)
             {
                 _members.Add(relayID);
-            }
-            public void Remove(PowerRelay relay)
-            {
-                Remove(relay.RelayID());
+                Suppliers.AddRelay(relayID);
             }
             public void Remove(string relayID)
             {
                 _members.Remove(relayID);
+                Suppliers.RemoveRelay(relayID);
                 if (_members.Count == 0)
                 {
                     _networksByID.Remove(ID);
                 }
             }
+
+            public PowerSuppliers Suppliers { get; } = new PowerSuppliers();
 
             public int Size => _members.Count;
 
