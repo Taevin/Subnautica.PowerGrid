@@ -44,13 +44,11 @@ namespace Subnautica.PowerGrid
 
         public float GetMaxPower(PowerRelay sender)
         {
-            return _suppliers.Sum(a => a.GetMaxPower())
-                + GetLocalSources(sender).Sum(a=>a.GetMaxPower());
+            return GetLocalAndRemoteSources(sender).Sum(a => a.GetMaxPower());
         }
         public float GetPower(PowerRelay sender)
         {
-            return _suppliers.Sum(a => a.GetPower())
-                + GetLocalSources(sender).Sum(a=>a.GetMaxPower());
+            return GetLocalAndRemoteSources(sender).Sum(a => a.GetPower());
         }
         public bool ModifyPower(PowerRelay sender, float amount, out float modified)
         {
@@ -73,12 +71,8 @@ namespace Subnautica.PowerGrid
 
         private IEnumerable<IPowerInterface> GetLocalAndRemoteSources(PowerRelay relay)
         {
-            return _suppliers.Cast<IPowerInterface>().Concat(GetLocalSources(relay).Cast<IPowerInterface>());
-        }
-
-        private IEnumerable<PowerSource> GetLocalSources(PowerRelay relay)
-        {
-            return relay.GetInboundSources();
+            return _suppliers.Cast<IPowerInterface>()
+                .Concat(relay.GetInboundNonRelaySources());
         }
         
     }
