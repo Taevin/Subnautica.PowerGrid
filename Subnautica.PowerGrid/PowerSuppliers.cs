@@ -7,8 +7,10 @@ namespace Subnautica.PowerGrid
 {
     class PowerSuppliers
     {
+        // Dummy supplier for relays not on a network
         public static PowerSuppliers EMPTY = new PowerSuppliers();
 
+        // Map Relay ID to Relay, but only for relays with internal power
         private static Dictionary<string, PowerRelay> _supplierMap = new Dictionary<string, PowerRelay>();
 
         public static void RegisterRelay(PowerRelay relay)
@@ -50,6 +52,9 @@ namespace Subnautica.PowerGrid
         {
             return GetLocalAndRemoteSources(sender).Sum(a => a.GetPower());
         }
+
+        // This is identical to the original ModifyPower in the game code, except that it uses
+        // a different set of sources.
         public bool ModifyPower(PowerRelay sender, float amount, out float modified)
         {
             bool result = false;
@@ -69,6 +74,9 @@ namespace Subnautica.PowerGrid
             return result;
         }
 
+        // Only PowerRelays are handled by the network.  When we look at available power sources, we also need to take into account
+        // non-relay nodes such as PowerSources, BatterySources, etc.  This returns the PowerRelays on the network, and all non-relay
+        // sources connected directly to this node (Such as generators or batteries inside a base).
         private IEnumerable<IPowerInterface> GetLocalAndRemoteSources(PowerRelay relay)
         {
             return _suppliers.Cast<IPowerInterface>()

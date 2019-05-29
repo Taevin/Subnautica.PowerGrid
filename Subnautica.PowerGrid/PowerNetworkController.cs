@@ -11,6 +11,9 @@ namespace Subnautica.PowerGrid
     {
         private static Dictionary<String, PowerNetwork> _relayToNetwork = new Dictionary<string, PowerNetwork>();
 
+        /// <summary>
+        /// Connect two relays, merging them into the same network
+        /// </summary>
         public static void ConnectRelays(PowerRelay supplier, PowerRelay consumer)
         {
             if (consumer == null) return;
@@ -49,6 +52,9 @@ namespace Subnautica.PowerGrid
             }
         }
 
+        /// <summary>
+        /// Disconnect two relays, splitting them into separate networks
+        /// </summary>
         public static void DisconnectRelays(PowerRelay supplier, PowerRelay consumer)
         {
             if (consumer == null) return;
@@ -68,6 +74,9 @@ namespace Subnautica.PowerGrid
             }
         }
 
+        /// <summary>
+        /// SIgnal that a relay is being destroyed, removing it from its network
+        /// </summary>
         public static void DestroyRelay(PowerRelay relay)
         {
             PowerNetwork network = GetNetworkByRelay(relay);
@@ -75,12 +84,26 @@ namespace Subnautica.PowerGrid
                 network.Suppliers.DestroyRelay(relay);
         }
 
+        /// <summary>
+        /// Test whether two relays belong to the same network, and are already directly or indirectly connected
+        /// </summary>
         public static bool AreInSameNetwork(PowerRelay a, PowerRelay b)
         {
             PowerNetwork aNet = GetNetworkByRelay(a);
             PowerNetwork bNet = GetNetworkByRelay(b);
             return aNet == bNet && aNet != null;
         }
+
+        /// <summary>
+        /// Return all external suppliers on a relay's network
+        /// </summary>
+        public static PowerSuppliers GetSuppliers(PowerRelay relay)
+        {
+            return GetNetworkByRelay(relay)?.Suppliers ?? PowerSuppliers.EMPTY;
+        }
+
+
+        // --------------------------------------------
 
         private static void AddRelayToNetwork(string relayID, PowerNetwork network)
         {
@@ -124,11 +147,6 @@ namespace Subnautica.PowerGrid
                 RemoveRelayFromNetwork(id);
                 AddRelayToNetwork(id, newNetwork);
             }
-        }
-
-        public static PowerSuppliers GetSuppliers(PowerRelay relay)
-        {
-            return GetNetworkByRelay(relay)?.Suppliers ?? PowerSuppliers.EMPTY;
         }
 
         private static PowerNetwork GetNetworkByRelay(PowerRelay relay) => relay == null ? null : _relayToNetwork.GetOrDefault(relay.RelayID(), null);

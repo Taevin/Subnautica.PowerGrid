@@ -54,6 +54,7 @@ namespace Subnautica.PowerGrid
         {
             if (__state != null)
             {
+                // After a relay disconnects its oubound connection, split the power network accordingly
                 Util.Log(string.Format("{0} -X-> {1}", __instance.Describe(), __state.Describe()));
                 PowerNetworkController.DisconnectRelays(__instance, __state);
             }

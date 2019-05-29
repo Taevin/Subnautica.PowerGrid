@@ -6,6 +6,9 @@ using Harmony;
 
 namespace Subnautica.PowerGrid
 {
+    /// <summary>
+    /// Error-catching (But otherwise unchanged) subclass to help distinguish the added relays from the existing ones.
+    /// </summary>
     internal class SecondaryRelay : PowerRelay
     {
         public override void Start()
@@ -19,7 +22,6 @@ namespace Subnautica.PowerGrid
                 Util.LogError("Error starting SecondaryRelay", ex);
             }
         }
-
 
     }
 }

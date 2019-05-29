@@ -11,6 +11,9 @@ namespace Subnautica.PowerGrid
         private static FieldInfo RELAY_INBOUND_FIELD = AccessTools.Field(typeof(PowerRelay), "inboundPowerSources");
         private static MethodInfo DISCONNECT_FROM_RELAY = AccessTools.Method(typeof(PowerRelay), "DisconnectFromRelay");
 
+        /// <summary>
+        /// Find the primary relay on the same GameObject as the specified SecondaryRelay, if any.
+        /// </summary>
         public static PowerRelay GetPrimary(this SecondaryRelay secondary)
         {
             PowerRelay[] relays = secondary.gameObject.GetComponents<PowerRelay>();
@@ -24,11 +27,17 @@ namespace Subnautica.PowerGrid
             return null;
         }
 
+        /// <summary>
+        /// Find the secondary relay on the same GameObject as the specified primary PowerRelay, if any.
+        /// </summary>
         public static SecondaryRelay GetSecondary(this PowerRelay relay)
         {
             return relay.gameObject.GetComponent<SecondaryRelay>();
         }
 
+        /// <summary>
+        /// Given one relay on a GameObject, find the other, if any.
+        /// </summary>
         public static PowerRelay GetSibling(this PowerRelay sender)
         {
             PowerRelay[] relays = sender.gameObject.GetComponents<PowerRelay>();
@@ -42,11 +51,17 @@ namespace Subnautica.PowerGrid
             return null;
         }
 
+        /// <summary>
+        /// Return all PowerRelays on a GameObject, including the supplied argument.
+        /// </summary>
         public static PowerRelay[] GetSiblings(this PowerRelay sender)
         {
             return sender.gameObject.GetComponents<PowerRelay>().ToArray();
         }
 
+        /// <summary>
+        /// Get an abbreviated name and GUID to describe this relay, suitable for logging.
+        /// </summary>
         public static String Describe(this PowerRelay relay)
         {
             if (relay == null) return "(null)";
@@ -73,6 +88,9 @@ namespace Subnautica.PowerGrid
             return type + " " + relay.gameObject.GetId().Substring(0, 4);
         }
 
+        /// <summary>
+        /// Return the ID of a relay's GameObject
+        /// </summary>
         public static String RelayID(this PowerRelay relay) => relay.gameObject.GetId();
 
 
@@ -83,6 +101,9 @@ namespace Subnautica.PowerGrid
             Outbound
         }
 
+        /// <summary>
+        /// Traverse the tree of relays and return all relays connected to the specified one
+        /// </summary>
         public static IEnumerable<PowerRelay> EnumerateConnections(this PowerRelay relay, Direction dir = Direction.Both)
         {
             yield return relay;
@@ -104,16 +125,26 @@ namespace Subnautica.PowerGrid
             }
         }
 
+        /// <summary>
+        /// Remove the outbound connection from this relay
+        /// </summary>
         public static void DisconnectFromConsumer(this PowerRelay relay)
         {
             DISCONNECT_FROM_RELAY.Invoke(relay, null);
         }
 
+        /// <summary>
+        /// Remove all inbound connections from this relay
+        /// </summary>
         public static void DisconnectFromPrimary(this SecondaryRelay relay)
         {
             (RELAY_INBOUND_FIELD.GetValue(relay) as List<IPowerInterface>).Clear();
         }
 
+        /// <summary>
+        /// Return all inbound sources on this relay that are NOT other relays (PowerSources, BatterySources, etc)
+        /// </summary>
+        /// <param name="relay"></param>
         public static IEnumerable<IPowerInterface> GetInboundNonRelaySources(this PowerRelay relay)
         {
             return (RELAY_INBOUND_FIELD.GetValue(relay) as List<IPowerInterface>)
