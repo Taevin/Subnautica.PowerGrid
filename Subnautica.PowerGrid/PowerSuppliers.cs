@@ -55,10 +55,10 @@ namespace Subnautica.PowerGrid
             bool result = false;
             modified = 0f;
             float original = amount;
-            foreach (PowerRelay relay in GetLocalAndRemoteSources(sender))
+            foreach (IPowerInterface source in GetLocalAndRemoteSources(sender))
             {
                 float num = 0f;
-                result = relay.ModifyPower(amount, out num);
+                result = source.ModifyPower(amount, out num);
                 modified += num;
                 amount -= num;
                 if (result)
